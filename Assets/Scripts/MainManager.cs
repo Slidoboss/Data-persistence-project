@@ -3,16 +3,21 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
+using TMPro;
+
 
 public class MainManager : MonoBehaviour
 {
     public Brick BrickPrefab;
     public int LineCount = 6;
     public Rigidbody Ball;
-
+   
     public Text ScoreText;
     public GameObject GameOverText;
     
+    public TextMeshProUGUI highScoreText;
+    public int highScore;
+
     private bool m_Started = false;
     private int m_Points;
     
@@ -22,6 +27,8 @@ public class MainManager : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
+        DataManager.instance.LoadScore();
+        highScoreText.text = "HighScore: " + DataManager.instance.hsPlayerName + " : " + DataManager.instance.highScore;
         const float step = 0.6f;
         int perLine = Mathf.FloorToInt(4.0f / step);
         
@@ -36,6 +43,7 @@ public class MainManager : MonoBehaviour
                 brick.onDestroyed.AddListener(AddPoint);
             }
         }
+       
     }
 
     private void Update()
@@ -48,7 +56,7 @@ public class MainManager : MonoBehaviour
                 float randomDirection = Random.Range(-1.0f, 1.0f);
                 Vector3 forceDir = new Vector3(randomDirection, 1, 0);
                 forceDir.Normalize();
-
+               
                 Ball.transform.SetParent(null);
                 Ball.AddForce(forceDir * 2.0f, ForceMode.VelocityChange);
             }
@@ -66,11 +74,22 @@ public class MainManager : MonoBehaviour
     {
         m_Points += point;
         ScoreText.text = $"Score : {m_Points}";
+        highScore = m_Points;
+
     }
 
     public void GameOver()
     {
         m_GameOver = true;
         GameOverText.SetActive(true);
+        if (m_Points > DataManager.instance.highScore)
+        {
+            
+            DataManager.instance.highScore = highScore;
+            DataManager.instance.SaveScore();
+           // highScoreText.text = "HighScore: " + DataManager.instance.playerName + " : " + DataManager.instance.highScore;
+            
+        }
+       
     }
 }
